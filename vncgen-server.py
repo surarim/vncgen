@@ -4,7 +4,7 @@
 # Запуск vnc сессий и создаание vnc файлов в общей папке, для удалённого доступа
 #------------------------------------------------------------------------------------------------
 
-import os, sys
+import os, sys, subprocess
 from datetime import datetime
 config = [] # Список параметров файла конфигурации
 
@@ -63,12 +63,24 @@ def log_write(message):
 
 #------------------------------------------------------------------------------------------------
 
-# Функция работы с пользователями
+# Функция подготовки локальных профилей пользователей
+def profile_prepare(username):
+  # Проверка на уже существующий профиль (создание пропускается)
+  pass
+
+#------------------------------------------------------------------------------------------------
+
+# Функция работы с сессиями и пользователями
 def run():
   log_write('vncgen started')
   # Создание файла VNCSessionsList (активный режим)
   with open(get_config('VNCSessionsList'), 'w') as f: f.write('# VNCSessionsList - server active')
-
+  #
+  # Получение списка пользователей для группы ADGroup
+  userslist = subprocess.check_output('ldapsearch -LLL -H ldap://'+get_config('ADServer')+'.'+get_config('DomainRealm')+' -D "'+get_config('ADUserName')+'@'+get_config('DomainRealm')+'" -w "'+get_config('ADUserPassword')+'" -b "dc='+get_config('DomainRealm').split('.')[0]+',dc='+get_config('DomainRealm').split('.')[1]+'" "(&(objectCategory=person)(memberOf=cn='+get_config('ADGroup')+',cn=Users,dc='+get_config('DomainRealm').split('.')[0]+',dc='+get_config('DomainRealm').split('.')[1]+'))" | grep sAMAccountName | cut -d" " -f2', shell=True).decode().strip()
+  for user in userslist.split():
+    print(user)
+  #
 
   # Пересоздание файла VNCSessionsList (неактивный режим)
   with open(get_config('VNCSessionsList'), 'w') as f: f.write('# VNCSessionsList - server stoped')
