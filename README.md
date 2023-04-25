@@ -8,5 +8,6 @@
 <ul>
   <li>Python: 3.9.2</li>
   <li>pypsrp: 0.4.0</li>
+  <li>gssapi: 1.6.10</li>
   <li>samba: 4.13.13-Debian</li>
  </ul>
