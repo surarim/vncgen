@@ -4,7 +4,7 @@
 # Запуск vnc сессий и создаание vnc файлов в общей папке, для удалённого доступа
 #------------------------------------------------------------------------------------------------
 
-import os, sys, subprocess
+import os, sys, subprocess, random
 from datetime import datetime
 config = [] # Список параметров файла конфигурации
 
@@ -69,15 +69,22 @@ def profile_prepare(username):
   if not os.path.exists('/home/'+username):
     try:
       result = subprocess.check_output('adduser --disabled-password --gecos "" --quiet '+username+' 2>/dev/null', shell=True).decode().strip()
-      log_write('Created user: '+username)
+      log_write('Created user '+username)
       # Копирование настроек default в новый профиль пользователя
       try:
         result = subprocess.check_output('mkdir -p /home/'+username+'/.config/xfce4 && cp -rf /home/default/.config/xfce4 /home/'+username+'/.config && chown -R '+username+':'+username+' /home/'+username+'/.config/xfce4 2>/dev/null', shell=True).decode().strip()
-        log_write('Copyed settings profile for user: '+username)
+        log_write('Copyed settings profile for user '+username)
       except subprocess.SubprocessError:
-        log_write('Error on copying settings profile for user: '+username)
+        log_write('Error on copying settings profile for user '+username)
+      # Генерирование пароля и установка
+      password = random.randint(100000,200000)
+      try:
+        result = subprocess.check_output('su - '+username+' -c "mkdir -p /home/'+username+'/.vnc && chown -R '+username+':'+username+' /home/'+username+'/.vnc && echo '+str(password)+' | vncpasswd -f > /home/'+username+'/.vnc/passwd && chmod 600 /home/'+username+'/.vnc/passwd"', shell=True).decode().strip()
+        log_write('For user '+username+' setup vnc password '+str(password))
+      except subprocess.SubprocessError:
+        log_write('Error setup password for user '+username)
     except subprocess.SubprocessError:
-      log_write('Error on creating user: '+username)
+      log_write('Error on creating user '+username)
 
 #------------------------------------------------------------------------------------------------
 
