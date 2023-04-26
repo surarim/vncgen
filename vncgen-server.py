@@ -66,7 +66,18 @@ def log_write(message):
 # Функция подготовки локальных профилей пользователей
 def profile_prepare(username):
   # Проверка на уже существующий профиль (создание пропускается)
-  pass
+  if not os.path.exists('/home/'+username):
+    try:
+      result = subprocess.check_output('adduser --disabled-password --gecos "" --quiet '+username+' 2>/dev/null', shell=True).decode().strip()
+      log_write('Created user: '+username)
+      # Копирование настроек default в новый профиль пользователя
+      try:
+        result = subprocess.check_output('mkdir -p /home/'+username+'/.config/xfce4 && cp -rf /home/default/.config/xfce4 /home/'+username+'/.config && chown -R '+username+':'+username+' /home/'+username+'/.config/xfce4 2>/dev/null', shell=True).decode().strip()
+        log_write('Copyed settings profile for user: '+username)
+      except subprocess.SubprocessError:
+        log_write('Error on copying settings profile for user: '+username)
+    except subprocess.SubprocessError:
+      log_write('Error on creating user: '+username)
 
 #------------------------------------------------------------------------------------------------
 
@@ -79,7 +90,7 @@ def run():
   # Получение списка пользователей для группы ADGroup
   userslist = subprocess.check_output('ldapsearch -LLL -H ldap://'+get_config('ADServer')+'.'+get_config('DomainRealm')+' -D "'+get_config('ADUserName')+'@'+get_config('DomainRealm')+'" -w "'+get_config('ADUserPassword')+'" -b "dc='+get_config('DomainRealm').split('.')[0]+',dc='+get_config('DomainRealm').split('.')[1]+'" "(&(objectCategory=person)(memberOf=cn='+get_config('ADGroup')+',cn=Users,dc='+get_config('DomainRealm').split('.')[0]+',dc='+get_config('DomainRealm').split('.')[1]+'))" | grep sAMAccountName | cut -d" " -f2', shell=True).decode().strip()
   for user in userslist.split():
-    print(user)
+    profile_prepare(user)
   #
 
   # Пересоздание файла VNCSessionsList (неактивный режим)
