@@ -111,17 +111,18 @@ def run_session_and_make_file(username):
       except subprocess.SubprocessError:
         log_write('Error write to vnc file '+get_config('VNCShareRemote')+'/'+username)
     else:
-      log_write('Error path '+get_config('VNCShareRemote')+' not exist '+str(password))
+      log_write('Error path '+get_config('VNCShareRemote')+' not exist ')
 
 #------------------------------------------------------------------------------------------------
 # Функция работы с сессиями и пользователями
 def run():
   #
   # Получение списка пользователей для группы ADGroup
-  userslist = subprocess.check_output('ldapsearch -LLL -H ldap://'+get_config('ADServer')+'.'+get_config('DomainRealm')+' -D "'+get_config('ADUserName')+'@'+get_config('DomainRealm')+'" -w "'+get_config('ADUserPassword')+'" -b "dc='+get_config('DomainRealm').split('.')[0]+',dc='+get_config('DomainRealm').split('.')[1]+'" "(&(objectCategory=person)(memberOf=cn='+get_config('ADGroup')+',cn=Users,dc='+get_config('DomainRealm').split('.')[0]+',dc='+get_config('DomainRealm').split('.')[1]+'))" | grep sAMAccountName | cut -d" " -f2', shell=True).decode().strip()
-  for user in userslist.split():
-    profile_prepare(user)
-    run_session_and_make_file(user)
+  userslist = subprocess.check_output('ldapsearch -LLL -H ldap://'+get_config('ADServer')+'.'+get_config('DomainRealm')+' -D "'+get_config('ADUserName')+'@'+get_config('DomainRealm')+'" -w "'+get_config('ADUserPassword')+'" -b "dc='+get_config('DomainRealm').split('.')[0]+',dc='+get_config('DomainRealm').split('.')[1]+'" "(&(objectCategory=person)(memberOf=cn='+get_config('ADGroup')+',cn=Users,dc='+get_config('DomainRealm').split('.')[0]+',dc='+get_config('DomainRealm').split('.')[1]+'))" 2>&1 | grep sAMAccountName | cut -d" " -f2', shell=True).decode().strip()
+  if userslist:
+    for user in userslist.split():
+      profile_prepare(user)
+      run_session_and_make_file(user)
   #
 
 #------------------------------------------------------------------------------------------------
