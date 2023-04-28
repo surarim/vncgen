@@ -111,7 +111,7 @@ def run_session_and_make_file(username):
       except subprocess.SubprocessError:
         log_write('Error write to vnc file '+get_config('VNCShareRemote')+'/'+username)
     else:
-      log_write('Error path '+get_config('VNCShareRemote')+' not exist ')
+      log_write('Error path '+get_config('VNCShareRemote')+' not exist')
 
 #------------------------------------------------------------------------------------------------
 # Функция работы с сессиями и пользователями
