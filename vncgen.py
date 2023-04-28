@@ -69,7 +69,7 @@ def profile_prepare(username):
       log_write('Created user '+username)
       # Копирование настроек default в новый профиль пользователя
       try:
-        result = subprocess.check_output('mkdir -p /home/'+username+'/.config/xfce4 && cp -rf /home/default/.config/xfce4 /home/'+username+'/.config && chown -R '+username+':'+username+' /home/'+username+'/.config/xfce4 2>/dev/null', shell=True).decode().strip()
+        result = subprocess.check_output('mkdir -p /home/'+username+'/.config/dconf && cp -rf /home/default/.config/dconf /home/'+username+'/.config && chown -R '+username+':'+username+' /home/'+username+'/.config/dconf 2>/dev/null', shell=True).decode().strip()
         log_write('Copyed settings profile for user '+username)
       except subprocess.SubprocessError:
         log_write('Error on copying settings profile for user '+username)
@@ -93,8 +93,8 @@ def run_session_and_make_file(username):
   if not user_session_port:
     # Запуск vnc сессии для пользователя
     try:
-      subprocess.check_output('su - '+username+' -c "vncserver -geometry '+get_config('VNCClientResolution')+'" 2>/dev/null', shell=True)
-      user_session_port = subprocess.check_output('ps aux | grep -e "desktop X -auth /home/'+username+'" | grep -oP "(?<=rfbport )\w+"', shell=True).decode().strip()
+      subprocess.check_output('su - '+username+' -c "tigervncserver -localhost=0 -geometry '+get_config('VNCClientResolution')+' -xstartup /usr/bin/gnome-session" 2>/dev/null', shell=True)
+      user_session_port = subprocess.check_output('ps aux | grep -e "-auth /home/'+username+'" | grep -oP "(?<=rfbport )\w+"', shell=True).decode().strip()
       log_write('For user '+username+' running vnc session on port '+user_session_port)
     except subprocess.SubprocessError:
       log_write('Error running vnc session for user '+username)
